@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SKU → URL Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Tesseract.js for OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>SKU URL Generator</h1>
+            <p>スクショから自動で商品リンクを作成します</p>
+        </header>
+
+        <main class="main-content">
+            <div class="upload-area" id="upload-area">
+                <input type="file" id="file-input" accept="image/jpeg, image/png, image/webp" multiple>
+                <label for="file-input" class="upload-label">
+                    <div class="upload-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                    </div>
+                    <span class="upload-text">タップして画像を選択</span>
+                    <span class="upload-subtext">またはドラッグ＆ドロップ (複数枚可)</span>
+                </label>
+            </div>
+
+            <div id="loading-area" class="loading-area hidden">
+                <div class="spinner"></div>
+                <p id="loading-text">画像を解析中...</p>
+            </div>
+
+            <div id="results-area" class="results-area">
+                <!-- Results will be injected here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Hidden canvas for image processing -->
+    <canvas id="canvas" style="display: none;"></canvas>
+
+    <script src="app.js"></script>
+</body>
+</html>
