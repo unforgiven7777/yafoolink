@@ -64,9 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const results = [];
 
-        // 3. Match YA-[a-z]... (ヤフオク)
+        // 3. Match YA-[a-z][0-9]+ (ヤフオク)
         // OCR might confuse hyphens, so we allow various hyphen-like characters
-        const regexYA = /(?:YA|ya|ＹＡ|ｙａ)[-ー━‐_~=・.]*([a-zA-Z][0-9a-zA-Z]{5,15})/gi;
+        // The ID should be one letter followed by only digits
+        const regexYA = /(?:YA|ya|ＹＡ|ｙａ)[-ー━‐_~=・.]*([a-zA-Z][0-9]{5,15})/gi;
         let matchYA;
         while ((matchYA = regexYA.exec(text)) !== null) {
             // Force lowercase for 's' and the ID part as per convention, though original might be kept.
@@ -81,8 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 4. Match YFM-[a-z]... (Yahooフリマ)
-        const regexYFM = /(?:YFM|yfm|ＹＦＭ|ｙｆｍ)[-ー━‐_~=・.]*([a-zA-Z][0-9a-zA-Z]{5,15})/gi;
+        // 4. Match YFM-[a-z][0-9]+ (Yahooフリマ)
+        const regexYFM = /(?:YFM|yfm|ＹＦＭ|ｙｆｍ)[-ー━‐_~=・.]*([a-zA-Z][0-9]{5,15})/gi;
         let matchYFM;
         while ((matchYFM = regexYFM.exec(text)) !== null) {
             let idPart = matchYFM[1].toLowerCase();
