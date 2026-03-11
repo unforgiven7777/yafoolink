@@ -66,10 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const results = [];
 
-        // 3. Match YA-[a-z][0-9]{10} (ヤフオク)
+        // 3. Match YA-[a-z][0-9]{9,10} (ヤフオク)
         // OCR might confuse hyphens, so we allow various hyphen-like characters
-        // The ID should be exactly one letter followed by 10 digits. Anything after that is ignored.
-        const regexYA = /(?:YA|ya|ＹＡ|ｙａ)[-ー━‐_~=・.]*([a-zA-Z][0-9]{10})/gi;
+        // The ID should be exactly one letter followed by 9 to 10 digits. Anything after that is ignored.
+        const regexYA = /(?:YA|ya|ＹＡ|ｙａ)[-ー━‐_~=・.]*([a-zA-Z][0-9]{9,10})/gi;
         let matchYA;
         while ((matchYA = regexYA.exec(text)) !== null) {
             // Force lowercase for 's' and the ID part as per convention, though original might be kept.
@@ -84,8 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 4. Match YFM-[a-z][0-9]{10} (Yahooフリマ)
-        const regexYFM = /(?:YFM|yfm|ＹＦＭ|ｙｆｍ)[-ー━‐_~=・.]*([a-zA-Z][0-9]{10})/gi;
+        // 4. Match YFM-[a-z][0-9]{9,10} (Yahooフリマ)
+        const regexYFM = /(?:YFM|yfm|ＹＦＭ|ｙｆｍ)[-ー━‐_~=・.]*([a-zA-Z][0-9]{9,10})/gi;
         let matchYFM;
         while ((matchYFM = regexYFM.exec(text)) !== null) {
             let idPart = matchYFM[1].toLowerCase();
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // limit length
             if (debugText.length > 100) debugText = debugText.substring(0, 100) + "...";
 
-            renderError(`有効なSKUを認識できませんでした。<br><small style='color:#EF4444; margin-top:4px; display:block;'>対応形式: YA-英字1文字+数字10桁 または YFM-英字1文字+数字10桁</small><div style='margin-top:12px; font-size:11px; color:#666; background:#f1f5f9; padding:8px; border-radius:4px; word-break:break-all;'>【読み取り確認用】<br>${debugText}</div>`);
+            renderError(`有効なSKUを認識できませんでした。<br><small style='color:#EF4444; margin-top:4px; display:block;'>対応形式: YA-英字1文字+数字9〜10桁 または YFM-英字1文字+数字9〜10桁</small><div style='margin-top:12px; font-size:11px; color:#666; background:#f1f5f9; padding:8px; border-radius:4px; word-break:break-all;'>【読み取り確認用】<br>${debugText}</div>`);
             return;
         }
 
