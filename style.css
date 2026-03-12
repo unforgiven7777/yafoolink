@@ -6,7 +6,7 @@
     --text-main: #111827;
     --text-sec: #6b7280;
     --border-color: #e5e7eb;
-    
+
     /* Gradients */
     --grad-primary: linear-gradient(135deg, #60A5FA, #3B82F6);
     --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -27,10 +27,11 @@ body {
 
 .app-container {
     width: 100%;
-    max-width: 480px; /* Smartphone optimized width */
+    max-width: 480px;
+    /* Smartphone optimized width */
     background-color: var(--card-bg);
     min-height: 100vh;
-    box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
 }
@@ -75,7 +76,8 @@ body {
     overflow: hidden;
 }
 
-.upload-area:hover, .upload-area:focus-within {
+.upload-area:hover,
+.upload-area:focus-within {
     border-color: var(--primary-color);
     background-color: #EFF6FF;
     transform: translateY(-2px);
@@ -97,7 +99,8 @@ body {
     align-items: center;
     justify-content: center;
     padding: 40px 20px;
-    pointer-events: none; /* Let the input handle clicks */
+    pointer-events: none;
+    /* Let the input handle clicks */
 }
 
 .upload-icon {
@@ -149,8 +152,13 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Results Area */
@@ -209,22 +217,44 @@ body {
     border-radius: 4px;
 }
 
-.action-btn {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    background: var(--primary-color);
-    color: white;
-    text-align: center;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 0.875rem;
-    transition: background 0.2s;
+.action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
 }
 
-.action-btn:hover {
+.action-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 4px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.action-btn.app-btn {
+    background: var(--primary-color);
+    color: white;
+    border: 1px solid var(--primary-color);
+}
+
+.action-btn.app-btn:hover {
     background: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+
+.action-btn.browser-btn {
+    background: white;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.action-btn.browser-btn:hover {
+    background: #EFF6FF;
 }
 
 .error-card {
@@ -252,6 +282,7 @@ body {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
