@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 serviceName: 'ヤフオク',
                 sku: 'YA-' + idPart,
                 id: idPart,
-                url: `https://auctions.yahoo.co.jp/jp/auction/${idPart}`,
+                url: `https://page.auctions.yahoo.co.jp/jp/auction/${idPart}`,
                 badgeClass: 'yahoo'
             });
         }
@@ -125,9 +125,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isAndroid) {
                 const fallbackUrl = encodeURIComponent(res.url);
                 if (res.serviceName === 'ヤフオク') {
-                    appUrl = `intent://auctions.yahoo.co.jp/jp/auction/${res.id}#Intent;scheme=https;package=jp.co.yahoo.android.yauction;S.browser_fallback_url=${fallbackUrl};end;`;
+                    appUrl = `intent://page.auctions.yahoo.co.jp/jp/auction/${res.id}#Intent;scheme=https;package=jp.co.yahoo.android.yauction;S.browser_fallback_url=${fallbackUrl};end;`;
                 } else if (res.serviceName === 'Yahooフリマ') {
                     appUrl = `intent://paypayfleamarket.yahoo.co.jp/item/${res.id}#Intent;scheme=https;package=jp.co.yahoo.android.pfleamarket;S.browser_fallback_url=${fallbackUrl};end;`;
+                }
+            } else {
+                // For iOS and others
+                if (res.serviceName === 'ヤフオク') {
+                    appUrl = `yjauctions://auction/${res.id}`;
+                } else if (res.serviceName === 'Yahooフリマ') {
+                    appUrl = `paypayfleamarket://item/${res.id}`;
                 }
             }
 
@@ -139,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="sku-text">${res.sku}</span>
                 </div>
                 <div class="action-buttons">
-                    <a href="${appUrl}" class="action-btn app-btn">
+                    <a href="${appUrl}" onclick="if(!/Android/i.test(navigator.userAgent)){ setTimeout(function(){ window.location.href='${res.url}'; }, 500); }" class="action-btn app-btn">
                         📦 アプリで開く
                     </a>
                     <a href="${res.url}" target="_blank" rel="noopener noreferrer" class="action-btn browser-btn">
@@ -147,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </a>
                 </div>
             `;
+
 
             resultsArea.appendChild(card);
         });
@@ -156,9 +164,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const errorCard = document.createElement('div');
         errorCard.className = 'error-card';
         errorCard.innerHTML = `
-            <h3>エラー</h3>
-            <p>${message}</p>
-        `;
+                < h3 > エラー</h3 >
+                    <p>${message}</p>
+            `;
         resultsArea.appendChild(errorCard);
     }
 });
