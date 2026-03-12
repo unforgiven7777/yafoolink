@@ -119,15 +119,20 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = 'result-card';
             card.style.animationDelay = `${index * 0.1}s`;
 
-            let appUrl = res.url; // Default to https url which triggers Universal Links on iOS
+            let appUrl = res.url; // Default to https url which triggers App Links/Universal Links
 
-            // For Android, try to use intent to force app open if possible
+            // For Android, standard intent links sometimes fail if the app package changed or intent filters are strict.
+            // Using standard https URLs is the recommended way for Android App Links and iOS Universal Links.
+            // However, to strongly suggest the app, we can use the intent scheme with ACTION_VIEW.
             if (isAndroid) {
                 const fallbackUrl = encodeURIComponent(res.url);
                 if (res.serviceName === 'ヤフオク') {
-                    appUrl = `intent://page.auctions.yahoo.co.jp/jp/auction/${res.id}#Intent;scheme=https;package=jp.co.yahoo.android.yauction;S.browser_fallback_url=${fallbackUrl};end;`;
+                    // Make sure the host matches what the app expects for its deep links.
+                    let urlWithoutProtocol = res.url.replace(/^https?:\/\//, '');
+                    appUrl = `intent://${urlWithoutProtocol}#Intent;scheme=https;package=jp.co.yahoo.android.yauction;action=android.intent.action.VIEW;S.browser_fallback_url=${fallbackUrl};end;`;
                 } else if (res.serviceName === 'Yahooフリマ') {
-                    appUrl = `intent://paypayfleamarket.yahoo.co.jp/item/${res.id}#Intent;scheme=https;package=jp.co.yahoo.android.pfleamarket;S.browser_fallback_url=${fallbackUrl};end;`;
+                    let urlWithoutProtocol = res.url.replace(/^https?:\/\//, '');
+                    appUrl = `intent://${urlWithoutProtocol}#Intent;scheme=https;package=jp.co.yahoo.android.pfleamarket;action=android.intent.action.VIEW;S.browser_fallback_url=${fallbackUrl};end;`;
                 }
             } else {
                 // For iOS and others
@@ -140,13 +145,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Note: For 'アプリで開く', we drop target="_blank" so mobile OS intercepts the navigation natively 
             // without forcing a new browser tab.
+            const iosFallbackScript = !isAndroid ? `onclick="setTimeout(function(){ window.location.href='${res.url}'; }, 500);"` : "";
+
             card.innerHTML = `
                 <div class="result-header">
                     <span class="service-badge ${res.badgeClass}">${res.serviceName}</span>
                     <span class="sku-text">${res.sku}</span>
                 </div>
                 <div class="action-buttons">
-                    <a href="${appUrl}" onclick="if(!/Android/i.test(navigator.userAgent)){ setTimeout(function(){ window.location.href='${res.url}'; }, 500); }" class="action-btn app-btn">
+                    <a href="${appUrl}" ${iosFallbackScript} class="action-btn app-btn">
                         📦 アプリで開く
                     </a>
                     <a href="${res.url}" target="_blank" rel="noopener noreferrer" class="action-btn browser-btn">
