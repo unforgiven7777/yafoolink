@@ -66,14 +66,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     const canvas = document.getElementById('canvas');
                     const ctx = canvas.getContext('2d');
 
-                    // Set canvas size (scale up slightly for better recognition)
-                    const scale = 1.5;
+                    // Set canvas size (2x scale for much better clarity)
+                    const scale = 2;
                     canvas.width = img.width * scale;
                     canvas.height = img.height * scale;
 
-                    // Apply filters (Grayscale + high contrast)
-                    // This helps OCR see thin or dark gray letters clearly against black backgrounds
-                    ctx.filter = 'grayscale(1) contrast(3) brightness(1.1)';
+                    // STRONG FILTERS:
+                    // 1. invert(1) - Makes background white and text dark. EXCEPTIONALLY good for OCR.
+                    // 2. grayscale(1) - Removes noise.
+                    // 3. contrast(4) - Makes letters sharp.
+                    ctx.filter = 'invert(1) grayscale(1) contrast(4) brightness(1.2)';
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
                     // Output as a data URL
