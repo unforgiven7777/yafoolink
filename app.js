@@ -19,10 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const file = files[i];
                 console.log(`Processing ${file.name}...`);
 
-                // Read image and run OCR using Tesseract.js
-                // 'eng' works best for reading alphanumeric SKUs
-                const { data: { text } } = await Tesseract.recognize(file, 'eng', {
-                    logger: m => console.log(m) // Log progress
+                // Pre-process image to improve OCR accuracy (especially for dark backgrounds)
+                const processedImageData = await preprocessImage(file);
+
+                // Run OCR using the processed image
+                const { data: { text } } = await Tesseract.recognize(processedImageData, 'eng', {
+                    logger: m => console.log(m)
                 });
 
                 console.log("Extracted text:", text);
@@ -54,6 +56,34 @@ document.addEventListener('DOMContentLoaded', () => {
             fileInput.value = '';
         }
     });
+
+    async function preprocessImage(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.getElementById('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // Set canvas size (scale up slightly for better recognition)
+                    const scale = 1.5;
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+
+                    // Apply filters (Grayscale + high contrast)
+                    // This helps OCR see thin or dark gray letters clearly against black backgrounds
+                    ctx.filter = 'grayscale(1) contrast(3) brightness(1.1)';
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    // Output as a data URL
+                    resolve(canvas.toDataURL('image/png'));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
 
     function extractSKUs(rawText) {
         // 1. Convert full-width characters to half-width
