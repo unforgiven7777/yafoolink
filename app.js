@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. Match YA-[a-z][0-9]{9,10} (ヤフオク)
         // OCR might confuse hyphens, so we allow various hyphen-like characters
         // The ID should be exactly one letter followed by 9 to 10 digits. Anything after that is ignored.
-        const regexYA = /(?:YA|ya|ＹＡ|ｙａ)[-ー━‐_~=・.]*([a-zA-Z][0-9]{9})/gi;
+        const regexYA = /(?:YA|ya|ＹＡ|ｙａ)[-ー━‐_~=・.]*([a-zA-Z][0-9]{9,10})/gi;
         let matchYA;
         while ((matchYA = regexYA.exec(text)) !== null) {
             // Force lowercase for 's' and the ID part as per convention, though original might be kept.
