@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("OCR Error:", error);
-            renderError("画像の読み取り中にエラーが発生しました。");
+            renderError(`画像の読み取り中にエラーが発生しました。<br><small style='opacity:0.8;'>詳細: ${error.message || error}</small>`);
         } finally {
             // Hide loading state
             loadingArea.classList.add('hidden');
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. Match YA-[a-z][0-9]{9,10} (ヤフオク)
         // OCR might confuse hyphens, so we allow various hyphen-like characters
         // The ID should be exactly one letter followed by 9 to 10 digits. Anything after that is ignored.
-        const regexYA = /(?:YA|ya|ＹＡ|ｙａ)[-ー━‐_~=・.]*([a-zA-Z][0-9]{9,10})/gi;
+        const regexYA = /(?:YA|ya|ＹＡ|ｙａ)[-ー━‐_~=・.]*([a-zA-Z][0-9]{9})/gi;
         let matchYA;
         while ((matchYA = regexYA.exec(text)) !== null) {
             // Force lowercase for 's' and the ID part as per convention, though original might be kept.
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 4. Match YFM-[a-z][0-9]{9,10} (Yahooフリマ)
-        const regexYFM = /(?:YFM|yfm|ＹＦＭ|ｙｆｍ)[-ー━‐_~=・.]*([a-zA-Z][0-9]{9,10})/gi;
+        const regexYFM = /(?:YFM|yfm|ＹＦＭ|ｙｆｍ)[-ー━‐_~=・.]*([a-zA-Z][0-9]{9})/gi;
         let matchYFM;
         while ((matchYFM = regexYFM.exec(text)) !== null) {
             let idPart = matchYFM[1].toLowerCase();
@@ -124,17 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // For Android, standard intent links sometimes fail if the app package changed or intent filters are strict.
             // Using standard https URLs is the recommended way for Android App Links and iOS Universal Links.
             // However, to strongly suggest the app, we can use the intent scheme with ACTION_VIEW.
-            if (isAndroid) {
-                const fallbackUrl = encodeURIComponent(res.url);
-                if (res.serviceName === 'ヤフオク') {
-                    // Make sure the host matches what the app expects for its deep links.
-                    let urlWithoutProtocol = res.url.replace(/^https?:\/\//, '');
-                    appUrl = `intent://${urlWithoutProtocol}#Intent;scheme=https;package=jp.co.yahoo.android.yauction;action=android.intent.action.VIEW;S.browser_fallback_url=${fallbackUrl};end;`;
-                } else if (res.serviceName === 'Yahooフリマ') {
-                    let urlWithoutProtocol = res.url.replace(/^https?:\/\//, '');
-                    appUrl = `intent://${urlWithoutProtocol}#Intent;scheme=https;package=jp.co.yahoo.android.pfleamarket;action=android.intent.action.VIEW;S.browser_fallback_url=${fallbackUrl};end;`;
-                }
-            } else {
+            // For Android, App Links usually work best with standard https URLs without target="_blank".
+            // If we use intent:// and the browser doesn't support it, it breaks.
+            // Let's use the standard native link for Android, and custom scheme for iOS.
+            if (!isAndroid) {
                 // For iOS and others
                 if (res.serviceName === 'ヤフオク') {
                     appUrl = `yjauctions://auction/${res.id}`;
@@ -171,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const errorCard = document.createElement('div');
         errorCard.className = 'error-card';
         errorCard.innerHTML = `
-                < h3 > エラー</h3 >
+                <h3>エラー</h3>
                     <p>${message}</p>
             `;
         resultsArea.appendChild(errorCard);
