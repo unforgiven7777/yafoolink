@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const processedImageData = await preprocessImage(file);
 
                 // Run OCR using the processed image
-                const { data: { text } } = await Tesseract.recognize(processedImageData, 'eng', {
+                // Use 'eng+jpn' to handle mixed Japanese and Alphanumeric text accurately
+                const { data: { text } } = await Tesseract.recognize(processedImageData, 'eng+jpn', {
                     logger: m => console.log(m)
                 });
 
@@ -72,10 +73,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     canvas.height = img.height * scale;
 
                     // STRONG FILTERS:
-                    // 1. invert(1) - Makes background white and text dark. EXCEPTIONALLY good for OCR.
+                    // 1. invert(1) - Makes background white and text dark.
                     // 2. grayscale(1) - Removes noise.
-                    // 3. contrast(4) - Makes letters sharp.
-                    ctx.filter = 'invert(1) grayscale(1) contrast(4) brightness(1.2)';
+                    // 3. contrast(5) - MAXIMUM sharp letters.
+                    ctx.filter = 'invert(1) grayscale(1) contrast(5) brightness(1.2)';
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
                     // Output as a data URL
@@ -98,15 +99,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const results = [];
 
-        // 3. Match YA-[a-z][0-9]{9,10} (ヤフオク)
-        // OCR might confuse hyphens, so we allow various hyphen-like characters
-        // The ID should be exactly one letter followed by 9 to 10 digits. Anything after that is ignored.
-        const regexYA = /(?:YA|ya|ＹＡ|ｙａ)[-ー━‐_~=・.]*([a-zA-Z][0-9]{10})/gi;
+        // 3. Match YA-[a-z][0-9]{10} (ヤフオク)
+        // More lenient prefix to handle OCR misreads (e.g., Y/4, vA, Ya, Y4)
+        const regexYA = /(?:YA|ya|Y[Ａ-Ｚａ-ｚ０-９\/\-‐]|vA|v4|V4|YI|yi)[-ー━‐_~=・.]*([a-zA-Z][0-9]{10})/gi;
         let matchYA;
         while ((matchYA = regexYA.exec(text)) !== null) {
-            // Force lowercase for 's' and the ID part as per convention, though original might be kept.
-            // "番号部分は勝手に変えないこと" -> We just lowercase 's' and 'z' but keep the rest as parsed, though usually it's numbers. 
-            // Wait, Japanese OCR might output 'S' instead of 's', so lowercase makes it safer.
             let idPart = matchYA[1].toLowerCase();
             results.push({
                 serviceName: 'ヤフオク',
@@ -117,8 +114,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 4. Match YFM-[a-z][0-9]{9,10} (Yahooフリマ)
-        const regexYFM = /(?:YFM|yfm|ＹＦＭ|ｙｆｍ)[-ー━‐_~=・.]*([a-zA-Z][0-9]{9})/gi;
+        // 4. Match YFM-[a-z][0-9]{9} (Yahooフリマ)
+        // Lenient prefix for YFM (e.g. YIFM, VFM)
+        const regexYFM = /(?:YFM|yfm|Y[IＩ]FM|vfm|VFM)[-ー━‐_~=・.]*([a-zA-Z][0-9]{9})/gi;
         let matchYFM;
         while ((matchYFM = regexYFM.exec(text)) !== null) {
             let idPart = matchYFM[1].toLowerCase();
