@@ -36,44 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const combinedText = allRawTexts.join('\n');
 
-            // Clean text for matching (half-width + no spaces)
-            let cleanCombined = combinedText.replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
-            cleanCombined = cleanCombined.replace(/\s+/g, '');
-
-            // Use the same refined regexes as extractSKUs
-            const regexYA = /(?:YA|ya|Y[A-Z0-9\/\-]|vA|v4|V4|YI|yi)[-ー━‐_~=・.]*([a-zA-Z][0-9]{10})/gi;
-            const regexYFM = /(?:YFM|yfm|Y[I]FM|vfm|VFM)[-ー━‐_~=・.]*([a-zA-Z][0-9]{9})/gi;
-
-            let extractedIds = [];
-            let m;
-            while ((m = regexYA.exec(cleanCombined)) !== null) extractedIds.push(m[1].toLowerCase());
-            while ((m = regexYFM.exec(cleanCombined)) !== null) extractedIds.push(m[1].toLowerCase());
-
-            // If no prefixed IDs found, fallback to standalone ID patterns
-            if (extractedIds.length === 0) {
-                const standalone = cleanCombined.match(/[a-zA-Z][0-9]{9,10}/g) || [];
-                extractedIds = standalone.map(id => id.toLowerCase());
-            }
-
-            // Show review area and set text (deduplicated)
+            // Show review area and set text (Show full text as requested for manual correction)
             reviewArea.classList.remove('hidden');
-            ocrTextInput.value = [...new Set(extractedIds)].join('\n');
-
-            // If no IDs found, filter raw text to remove noise (UI buttons, generic labels)
-            if (extractedIds.length === 0) {
-                const lines = combinedText.split('\n');
-                const filteredLines = lines.filter(line => {
-                    const trimmed = line.trim();
-                    if (!trimmed) return false;
-                    // Keep lines that have numbers or fairly long alphanumeric strings
-                    // This filters out "商品の詳細をもっと見る" while keeping order IDs or dates
-                    return /[0-9]/.test(trimmed) || /[a-zA-Z0-9]{7,}/.test(trimmed);
-                });
-                ocrTextInput.value = filteredLines.join('\n').trim();
-            }
+            ocrTextInput.value = combinedText;
 
             // Automatically run extraction once
-            processAndRender(ocrTextInput.value);
+            processAndRender(combinedText);
 
         } catch (error) {
             console.error("OCR Error:", error);
