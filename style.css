@@ -161,8 +161,8 @@ body {
     }
 }
 
-/* Manual Area */
-.manual-area {
+/* Review Area */
+.review-area {
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -173,19 +173,23 @@ body {
     animation: slideUp 0.3s ease-out;
 }
 
-.manual-header h3 {
+.review-area.hidden {
+    display: none;
+}
+
+.review-header h3 {
     margin: 0 0 4px 0;
     font-size: 1rem;
     color: var(--text-main);
 }
 
-.manual-header p {
+.review-header p {
     margin: 0;
     font-size: 0.75rem;
     color: var(--text-sec);
 }
 
-.manual-textarea {
+.review-textarea {
     width: 100%;
     min-height: 120px;
     padding: 12px;
@@ -198,16 +202,10 @@ body {
     box-sizing: border-box;
 }
 
-.manual-textarea:focus {
+.review-textarea:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.separator {
-    height: 1px;
-    background: var(--border-color);
-    margin: 10px 0;
 }
 
 .button-container {

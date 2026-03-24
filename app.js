@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('file-input');
     const loadingArea = document.getElementById('loading-area');
-    const resultsArea = document.getElementById('results-area'); // Automatic results
-    const manualTextInput = document.getElementById('manual-text-input');
-    const manualProcessBtn = document.getElementById('manual-process-btn');
-    const manualResultsArea = document.getElementById('manual-results-area'); // Manual results
+    const resultsArea = document.getElementById('results-area');
+    const reviewArea = document.getElementById('review-area');
+    const ocrTextInput = document.getElementById('ocr-text-input');
+    const reprocessBtn = document.getElementById('reprocess-btn');
 
     fileInput.addEventListener('change', async (e) => {
         const files = e.target.files;
@@ -37,11 +37,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const combinedText = allRawTexts.join('\n');
 
-            // Populate manual input box automatically with OCR text for reference/correction
-            manualTextInput.value = combinedText;
+            // Show review area and set text (Show full text as requested for manual correction)
+            reviewArea.classList.remove('hidden');
+            ocrTextInput.value = combinedText;
 
-            // Automatically run extraction for the main results area
-            processAndRender(combinedText, resultsArea);
+            // Automatically run extraction once
+            processAndRender(combinedText);
 
         } catch (error) {
             console.error("OCR Error:", error);
@@ -54,18 +55,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handle manual re-processing (separate results area)
-    manualProcessBtn.addEventListener('click', () => {
-        const text = manualTextInput.value;
-        // Manual results go to the separate manual-results area
-        processAndRender(text, manualResultsArea);
+    // Handle manual re-processing
+    reprocessBtn.addEventListener('click', () => {
+        const text = ocrTextInput.value;
+        processAndRender(text);
 
-        // Scroll to manual results
-        manualResultsArea.scrollIntoView({ behavior: 'smooth' });
+        // Scroll to results
+        resultsArea.scrollIntoView({ behavior: 'smooth' });
     });
 
-    function processAndRender(text, targetArea) {
-        targetArea.innerHTML = ''; // Clear only the target area
+    function processAndRender(text) {
+        resultsArea.innerHTML = ''; // Clear previous results
         const skus = extractSKUs(text);
 
         // Remove duplicates
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        renderResults(uniqueResults, text, targetArea);
+        renderResults(uniqueResults, text);
     }
 
     async function preprocessImage(file) {
@@ -190,13 +190,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return results;
     }
 
-    function renderResults(results, rawText = "", targetArea) {
+    function renderResults(results, rawText = "") {
         if (results.length === 0) {
             let debugText = rawText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
             // limit length
             if (debugText.length > 100) debugText = debugText.substring(0, 100) + "...";
 
-            renderError(`有効なSKUを認識できませんでした。<br><small style='color:#EF4444; margin-top:4px; display:block;'>対応形式: YA-英字1文字+数字9〜10桁 または YFM-英字1文字+数字9〜10桁</small><div style='margin-top:12px; font-size:11px; color:#666; background:#f1f5f9; padding:8px; border-radius:4px; word-break:break-all;'>【読み取り確認用】<br>${debugText}</div>`, targetArea);
+            renderError(`有効なSKUを認識できませんでした。<br><small style='color:#EF4444; margin-top:4px; display:block;'>対応形式: YA-英字1文字+数字9〜10桁 または YFM-英字1文字+数字9〜10桁</small><div style='margin-top:12px; font-size:11px; color:#666; background:#f1f5f9; padding:8px; border-radius:4px; word-break:break-all;'>【読み取り確認用】<br>${debugText}</div>`);
             return;
         }
 
@@ -207,8 +207,16 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = 'result-card';
             card.style.animationDelay = `${index * 0.1}s`;
 
-            let appUrl = res.url;
+            let appUrl = res.url; // Default to https url which triggers App Links/Universal Links
+
+            // For Android, standard intent links sometimes fail if the app package changed or intent filters are strict.
+            // Using standard https URLs is the recommended way for Android App Links and iOS Universal Links.
+            // However, to strongly suggest the app, we can use the intent scheme with ACTION_VIEW.
+            // For Android, App Links usually work best with standard https URLs without target="_blank".
+            // If we use intent:// and the browser doesn't support it, it breaks.
+            // Let's use the standard native link for Android, and custom scheme for iOS.
             if (!isAndroid) {
+                // For iOS and others
                 if (res.serviceName === 'ヤフオク') {
                     appUrl = `yjauctions://auction/${res.id}`;
                 } else if (res.serviceName === 'Yahooフリマ') {
@@ -216,6 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            // Note: For 'アプリで開く', we drop target="_blank" so mobile OS intercepts the navigation natively 
+            // without forcing a new browser tab.
             const iosFallbackScript = !isAndroid ? `onclick="setTimeout(function(){ window.location.href='${res.url}'; }, 500);"` : "";
 
             card.innerHTML = `
@@ -233,17 +243,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            targetArea.appendChild(card);
+
+            resultsArea.appendChild(card);
         });
     }
 
-    function renderError(message, targetArea) {
+    function renderError(message) {
         const errorCard = document.createElement('div');
         errorCard.className = 'error-card';
         errorCard.innerHTML = `
                 <h3>エラー</h3>
                     <p>${message}</p>
             `;
-        targetArea.appendChild(errorCard);
+        resultsArea.appendChild(errorCard);
     }
 });
