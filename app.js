@@ -35,13 +35,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const combinedText = allRawTexts.join('\n');
-            
-            // Show review area and set text
+
+            // Filter only "ID-like" strings to show in the review box
+            // Yahoo IDs are typically: 1 letter + 10 digits (Auctions) or 1 letter + 9 digits (Flea Market)
+            const potentialIds = combinedText.match(/[a-zA-Z][0-9]{9,10}/g) || [];
+
+            // Show review area and set text (deduplicated)
             reviewArea.classList.remove('hidden');
-            ocrTextInput.value = combinedText;
+            ocrTextInput.value = [...new Set(potentialIds)].join('\n');
+
+            // If no IDs found, show raw text so user can find them
+            if (potentialIds.length === 0) {
+                ocrTextInput.value = combinedText;
+            }
 
             // Automatically run extraction once
-            processAndRender(combinedText);
+            processAndRender(ocrTextInput.value);
 
         } catch (error) {
             console.error("OCR Error:", error);
@@ -58,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     reprocessBtn.addEventListener('click', () => {
         const text = ocrTextInput.value;
         processAndRender(text);
-        
+
         // Scroll to results
         resultsArea.scrollIntoView({ behavior: 'smooth' });
     });
@@ -66,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function processAndRender(text) {
         resultsArea.innerHTML = ''; // Clear previous results
         const skus = extractSKUs(text);
-        
+
         // Remove duplicates
         const uniqueResults = [];
         const seenUrls = new Set();
@@ -149,6 +158,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 url: `https://paypayfleamarket.yahoo.co.jp/item/${idPart}`,
                 badgeClass: 'fleamarket'
             });
+        }
+
+        // 5. Harder fallback: Support IDs without prefix (if they are alone or separated)
+        // This is mainly for the manual correction box where user might just type the ID.
+        if (results.length === 0) {
+            const rawLines = rawText.split(/[\s\n,]+/).map(s => s.trim());
+            for (let line of rawLines) {
+                // Convert full-width again for safety
+                line = line.replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+
+                // 11 chars (letter + 10 digits) -> Auctions
+                if (/^[a-zA-Z][0-9]{10}$/.test(line)) {
+                    results.push({
+                        serviceName: 'ヤフオク',
+                        sku: 'YA-' + line.toLowerCase(),
+                        id: line.toLowerCase(),
+                        url: `https://page.auctions.yahoo.co.jp/jp/auction/${line.toLowerCase()}`,
+                        badgeClass: 'yahoo'
+                    });
+                }
+                // 10 chars (letter + 9 digits) -> Flea Market
+                else if (/^[a-zA-Z][0-9]{9}$/.test(line)) {
+                    results.push({
+                        serviceName: 'Yahooフリマ',
+                        sku: 'YFM-' + line.toLowerCase(),
+                        id: line.toLowerCase(),
+                        url: `https://paypayfleamarket.yahoo.co.jp/item/${line.toLowerCase()}`,
+                        badgeClass: 'fleamarket'
+                    });
+                }
+            }
         }
 
         return results;
