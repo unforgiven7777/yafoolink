@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const reviewArea = document.getElementById('review-area');
     const ocrTextInput = document.getElementById('ocr-text-input');
     const reprocessBtn = document.getElementById('reprocess-btn');
+    const previewContainer = document.getElementById('image-preview-container');
 
     fileInput.addEventListener('change', async (e) => {
         const files = e.target.files;
@@ -13,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show loading state
         loadingArea.classList.remove('hidden');
         resultsArea.innerHTML = ''; // Clear previous results
+        previewContainer.innerHTML = ''; // Clear previous previews
         let allResults = [];
         let allRawTexts = [];
 
@@ -21,6 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 console.log(`Processing ${file.name}...`);
+
+                // Add preview immediately
+                const previewImg = document.createElement('img');
+                previewImg.src = URL.createObjectURL(file);
+                previewImg.className = 'preview-thumbnail';
+                previewContainer.appendChild(previewImg);
 
                 // Pre-process image to improve OCR accuracy
                 const processedImageData = await preprocessImage(file);

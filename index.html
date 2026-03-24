@@ -41,8 +41,13 @@
             <div id="review-area" class="review-area hidden">
                 <div class="review-header">
                     <h3>読み取り結果の確認・修正</h3>
-                    <p>誤字がある場合は手動で修正してください</p>
+                    <p>画像と照らし合わせて修正してください</p>
                 </div>
+
+                <div id="image-preview-container" class="preview-container">
+                    <!-- Images will be injected here -->
+                </div>
+
                 <textarea id="ocr-text-input" class="review-textarea" placeholder="ここに読み取ったテキストが表示されます..."></textarea>
                 <div class="button-container">
                     <button id="reprocess-btn" class="primary-btn">

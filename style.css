@@ -183,10 +183,24 @@ body {
     color: var(--text-main);
 }
 
-.review-header p {
-    margin: 0;
-    font-size: 0.75rem;
-    color: var(--text-sec);
+/* Image Preview */
+.preview-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 12px;
+    padding: 10px 0;
+    margin-bottom: 12px;
+    scrollbar-width: thin;
+}
+
+.preview-thumbnail {
+    flex: 0 0 auto;
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .review-textarea {
