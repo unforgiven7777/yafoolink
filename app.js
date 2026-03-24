@@ -2,6 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('file-input');
     const loadingArea = document.getElementById('loading-area');
     const resultsArea = document.getElementById('results-area');
+    const reviewArea = document.getElementById('review-area');
+    const ocrTextInput = document.getElementById('ocr-text-input');
+    const reprocessBtn = document.getElementById('reprocess-btn');
 
     fileInput.addEventListener('change', async (e) => {
         const files = e.target.files;
@@ -19,33 +22,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const file = files[i];
                 console.log(`Processing ${file.name}...`);
 
-                // Pre-process image to improve OCR accuracy (especially for dark backgrounds)
+                // Pre-process image to improve OCR accuracy
                 const processedImageData = await preprocessImage(file);
 
                 // Run OCR using the processed image
-                // Use 'eng+jpn' to handle mixed Japanese and Alphanumeric text accurately
                 const { data: { text } } = await Tesseract.recognize(processedImageData, 'eng+jpn', {
                     logger: m => console.log(m)
                 });
 
                 console.log("Extracted text:", text);
                 allRawTexts.push(text);
-
-                const skus = extractSKUs(text);
-                allResults = allResults.concat(skus);
             }
 
-            // Remove duplicates across multiple images
-            const uniqueResults = [];
-            const seenUrls = new Set();
-            for (const r of allResults) {
-                if (!seenUrls.has(r.url)) {
-                    seenUrls.add(r.url);
-                    uniqueResults.push(r);
-                }
-            }
+            const combinedText = allRawTexts.join('\n');
+            
+            // Show review area and set text
+            reviewArea.classList.remove('hidden');
+            ocrTextInput.value = combinedText;
 
-            renderResults(uniqueResults, allRawTexts.join(' '));
+            // Automatically run extraction once
+            processAndRender(combinedText);
 
         } catch (error) {
             console.error("OCR Error:", error);
@@ -57,6 +53,32 @@ document.addEventListener('DOMContentLoaded', () => {
             fileInput.value = '';
         }
     });
+
+    // Handle manual re-processing
+    reprocessBtn.addEventListener('click', () => {
+        const text = ocrTextInput.value;
+        processAndRender(text);
+        
+        // Scroll to results
+        resultsArea.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    function processAndRender(text) {
+        resultsArea.innerHTML = ''; // Clear previous results
+        const skus = extractSKUs(text);
+        
+        // Remove duplicates
+        const uniqueResults = [];
+        const seenUrls = new Set();
+        for (const r of skus) {
+            if (!seenUrls.has(r.url)) {
+                seenUrls.add(r.url);
+                uniqueResults.push(r);
+            }
+        }
+
+        renderResults(uniqueResults, text);
+    }
 
     async function preprocessImage(file) {
         return new Promise((resolve) => {
