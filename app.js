@@ -119,6 +119,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Remove all spaces and newlines
         text = text.replace(/\s+/g, '');
 
+        // 3. Common OCR misread corrections (especially for the digit 1)
+        // Correcting cases where 1 is misread as brackets or Japanese brackets
+        text = text.replace(/[\]］」\[［「]/g, '1');
+
         const results = [];
 
         // 3. Match YA-[a-z][0-9]{10} (ヤフオク)
