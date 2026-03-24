@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Run OCR using the processed image
                 const { data: { text } } = await Tesseract.recognize(processedImageData, 'eng+jpn', {
-                    logger: m => console.log(m)
+                    logger: m => console.log(m),
+                    tessedit_char_blacklist: ']}」』)]）'
                 });
 
                 console.log("Extracted text:", text);
