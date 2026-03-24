@@ -59,9 +59,17 @@ document.addEventListener('DOMContentLoaded', () => {
             reviewArea.classList.remove('hidden');
             ocrTextInput.value = [...new Set(extractedIds)].join('\n');
 
-            // If still no IDs found, show raw text as fallback
+            // If no IDs found, filter raw text to remove noise (UI buttons, generic labels)
             if (extractedIds.length === 0) {
-                ocrTextInput.value = combinedText;
+                const lines = combinedText.split('\n');
+                const filteredLines = lines.filter(line => {
+                    const trimmed = line.trim();
+                    if (!trimmed) return false;
+                    // Keep lines that have numbers or fairly long alphanumeric strings
+                    // This filters out "商品の詳細をもっと見る" while keeping order IDs or dates
+                    return /[0-9]/.test(trimmed) || /[a-zA-Z0-9]{7,}/.test(trimmed);
+                });
+                ocrTextInput.value = filteredLines.join('\n').trim();
             }
 
             // Automatically run extraction once
