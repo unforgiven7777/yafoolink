@@ -36,16 +36,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const combinedText = allRawTexts.join('\n');
 
-            // Filter only "ID-like" strings to show in the review box
-            // Yahoo IDs are typically: 1 letter + 10 digits (Auctions) or 1 letter + 9 digits (Flea Market)
-            const potentialIds = combinedText.match(/[a-zA-Z][0-9]{9,10}/g) || [];
+            // Clean text for matching (half-width + no spaces)
+            let cleanCombined = combinedText.replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+            cleanCombined = cleanCombined.replace(/\s+/g, '');
+
+            // Use the same refined regexes as extractSKUs
+            const regexYA = /(?:YA|ya|Y[A-Z0-9\/\-]|vA|v4|V4|YI|yi)[-ー━‐_~=・.]*([a-zA-Z][0-9]{10})/gi;
+            const regexYFM = /(?:YFM|yfm|Y[I]FM|vfm|VFM)[-ー━‐_~=・.]*([a-zA-Z][0-9]{9})/gi;
+
+            let extractedIds = [];
+            let m;
+            while ((m = regexYA.exec(cleanCombined)) !== null) extractedIds.push(m[1].toLowerCase());
+            while ((m = regexYFM.exec(cleanCombined)) !== null) extractedIds.push(m[1].toLowerCase());
+
+            // If no prefixed IDs found, fallback to standalone ID patterns
+            if (extractedIds.length === 0) {
+                const standalone = cleanCombined.match(/[a-zA-Z][0-9]{9,10}/g) || [];
+                extractedIds = standalone.map(id => id.toLowerCase());
+            }
 
             // Show review area and set text (deduplicated)
             reviewArea.classList.remove('hidden');
-            ocrTextInput.value = [...new Set(potentialIds)].join('\n');
+            ocrTextInput.value = [...new Set(extractedIds)].join('\n');
 
-            // If no IDs found, show raw text so user can find them
-            if (potentialIds.length === 0) {
+            // If still no IDs found, show raw text as fallback
+            if (extractedIds.length === 0) {
                 ocrTextInput.value = combinedText;
             }
 
