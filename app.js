@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadingArea.classList.remove('hidden');
         resultsArea.innerHTML = ''; // Clear previous results
         previewContainer.innerHTML = ''; // Clear previous previews
-        previewContainer.classList.remove('hidden'); // SHOW preview area immediately
+        previewContainer.style.display = 'flex'; // FORCE SHOW preview area
         let allResults = [];
         let allRawTexts = [];
 
@@ -25,11 +25,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const file = files[i];
                 console.log(`Processing ${file.name}...`);
 
-                // Add preview immediately
-                const previewImg = document.createElement('img');
-                previewImg.src = URL.createObjectURL(file);
-                previewImg.className = 'preview-thumbnail';
-                previewContainer.appendChild(previewImg);
+                // Use FileReader for more robust local preview on all mobile devices
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const previewImg = document.createElement('img');
+                    previewImg.src = event.target.result;
+                    previewImg.className = 'preview-thumbnail';
+                    previewContainer.appendChild(previewImg);
+                };
+                reader.readAsDataURL(file);
 
                 // Pre-process image to improve OCR accuracy
                 const processedImageData = await preprocessImage(file);
@@ -132,6 +136,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. Common OCR misread corrections (especially for the digit 1)
         // Correcting cases where 1 is misread as brackets or Japanese brackets
         text = text.replace(/[\]］」\[［「]/g, '1');
+
+        // Correcting g1 misread as gl or gI (very common for Yahoo IDs starting with g)
+        text = text.replace(/gl/gi, 'g1');
+        text = text.replace(/gI/g, 'g1');
 
         const results = [];
 
