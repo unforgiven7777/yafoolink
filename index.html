@@ -33,6 +33,10 @@
                 </label>
             </div>
 
+            <div id="image-preview-container" class="preview-container hidden">
+                <!-- Loaded images here -->
+            </div>
+
             <div id="loading-area" class="loading-area hidden">
                 <div class="spinner"></div>
                 <p id="loading-text">画像を解析中...</p>
@@ -42,10 +46,6 @@
                 <div class="review-header">
                     <h3>読み取り結果の確認・修正</h3>
                     <p>画像と照らし合わせて修正してください</p>
-                </div>
-
-                <div id="image-preview-container" class="preview-container">
-                    <!-- Images will be injected here -->
                 </div>
 
                 <textarea id="ocr-text-input" class="review-textarea" placeholder="ここに読み取ったテキストが表示されます..."></textarea>

@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadingArea.classList.remove('hidden');
         resultsArea.innerHTML = ''; // Clear previous results
         previewContainer.innerHTML = ''; // Clear previous previews
+        previewContainer.classList.remove('hidden'); // SHOW preview area immediately
         let allResults = [];
         let allRawTexts = [];
 
