@@ -188,21 +188,22 @@ body {
 /* Image Preview */
 .preview-container {
     display: flex;
-    overflow-x: auto;
-    gap: 12px;
+    flex-direction: column;
+    /* Stack vertically for better readability */
+    gap: 16px;
     padding: 10px 0;
     margin-bottom: 12px;
-    scrollbar-width: thin;
 }
 
 .preview-thumbnail {
-    flex: 0 0 auto;
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 8px;
+    width: 100%;
+    height: auto;
+    max-height: 500px;
+    object-fit: contain;
+    /* Show the entire screenshot */
+    border-radius: 12px;
     border: 1px solid var(--border-color);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-soft);
 }
 
 .review-textarea {
